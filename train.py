@@ -41,7 +41,7 @@ def train(fold_num, train_datasets, validation_datasets, num_epochs=100):
 
     train_dataloaders = list(chain(*train_dataloaders))
     npc_loss_list = []
-    iCNN_loss_list = []
+
 
     for validation_dataset in validation_datasets:
         _, val_dataloader = get_dataloaders(validation_dataset)
@@ -50,16 +50,16 @@ def train(fold_num, train_datasets, validation_datasets, num_epochs=100):
     for epoch in range(num_epochs):
         print(f'Epoch #{epoch+1}')
         logging.info(f'Epoch #{epoch+1}')
-        npc_loss, iCNN_loss, train_time = train_epoch(model, train_dataloaders, optimizer, npc_training_loss, device)
+        npc_loss, train_time = train_epoch(model, train_dataloaders, optimizer, npc_training_loss, device)
         scheduler.step()
         npc_loss_list.append(npc_loss)
-        iCNN_loss_list.append(iCNN_loss)
+  
         save_model('../model', fold_num, epoch, model, optimizer)
         print(
-            f'NPCloss = {npc_loss:.4f} iCNNloss = {iCNN_loss:.4f} TrainTime = {train_time:.4f}s'
+            f'NPCloss = {npc_loss:.4f} TrainTime = {train_time:.4f}s'
         )
         logging.info(
-            f'NPCloss = {npc_loss:.4f} iCNNloss = {iCNN_loss:.4f} TrainTime = {train_time:.4f}s'
+            f'NPCloss = {npc_loss:.4f} TrainTime = {train_time:.4f}s'
         )
 
         print('Training completed. Starting validation...')
@@ -113,18 +113,16 @@ def train(fold_num, train_datasets, validation_datasets, num_epochs=100):
         np.save(f'../results/event_specificity_list_fold_{fold_num+1}_epoch_{epoch}.npy', event_specificity_list)
 
     y1 = np.array([])
-    y2 = np.array([])
+
     
     for i in npc_loss_list:
         y1 = np.append(y1, i)
 
-    for i in iCNN_loss_list:
-        y2 = np.append(y2, i)
     
     x = np.arange(0, num_epochs)
     
-    plt.plot(x, y1, 'r-.', label = 'NPC')
-    plt.plot(x, y2, 'b-.', label = 'iCNN')
+    plt.plot(x, y1, 'r-.', label = 'train')
+
     plt.legend()
     
     plt.title('Loss by Epoch')
@@ -140,27 +138,27 @@ if __name__ == '__main__':
 
     path = '/home/dhyun/project/FYP'
     datasets = [
-        # CustomEEGDataset(path + '/chb01.pt'),
-        # CustomEEGDataset(path + '/chb02.pt'),
-        # CustomEEGDataset(path + '/chb03.pt'),
-        # CustomEEGDataset(path + '/chb04-1.pt'),
-        # CustomEEGDataset(path + '/chb04-2.pt'),
-        # CustomEEGDataset(path + '/chb05.pt'),
-        # CustomEEGDataset(path + '/chb06.pt'),
-        # CustomEEGDataset(path + '/chb07.pt'),
-        # CustomEEGDataset(path + '/chb08.pt'),
-        # CustomEEGDataset(path + '/chb09.pt'),
-        # CustomEEGDataset(path + '/chb10.pt'),
-        # CustomEEGDataset(path + '/chb11.pt'),
-        # CustomEEGDataset(path + '/chb12.pt'),
-        # CustomEEGDataset(path + '/chb13.pt'),
-        # CustomEEGDataset(path + '/chb14.pt'),
-        # CustomEEGDataset(path + '/chb15.pt'),
-        # CustomEEGDataset(path + '/chb16.pt'),
-        # CustomEEGDataset(path + '/chb17.pt'),
-        # CustomEEGDataset(path + '/chb18.pt'),
-        # CustomEEGDataset(path + '/chb19.pt'),
-        # CustomEEGDataset(path + '/chb20.pt'),
+        CustomEEGDataset(path + '/chb01.pt'),
+        CustomEEGDataset(path + '/chb02.pt'),
+        CustomEEGDataset(path + '/chb03.pt'),
+        CustomEEGDataset(path + '/chb04-1.pt'),
+        CustomEEGDataset(path + '/chb04-2.pt'),
+        CustomEEGDataset(path + '/chb05.pt'),
+        CustomEEGDataset(path + '/chb06.pt'),
+        CustomEEGDataset(path + '/chb07.pt'),
+        CustomEEGDataset(path + '/chb08.pt'),
+        CustomEEGDataset(path + '/chb09.pt'),
+        CustomEEGDataset(path + '/chb10.pt'),
+        CustomEEGDataset(path + '/chb11.pt'),
+        CustomEEGDataset(path + '/chb12.pt'),
+        CustomEEGDataset(path + '/chb13.pt'),
+        CustomEEGDataset(path + '/chb14.pt'),
+        CustomEEGDataset(path + '/chb15.pt'),
+        CustomEEGDataset(path + '/chb16.pt'),
+        CustomEEGDataset(path + '/chb17.pt'),
+        CustomEEGDataset(path + '/chb18.pt'),
+        CustomEEGDataset(path + '/chb19.pt'),
+        CustomEEGDataset(path + '/chb20.pt'),
         CustomEEGDataset(path + '/chb21.pt'),
         CustomEEGDataset(path + '/chb22.pt'),
         CustomEEGDataset(path + '/chb23.pt'),
@@ -168,7 +166,7 @@ if __name__ == '__main__':
     ]
 
     validation_datasets = [
-        [0],
+        # [0],
         [12, 18, 20],
         [0, 11, 13],
         [16, 21, 24],
@@ -180,7 +178,7 @@ if __name__ == '__main__':
     ]
 
     train_datasets = [
-        [1, 2, 3],
+        # [1, 2, 3],
         [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 14, 15, 16, 17, 19, 21, 22, 23, 24],
         [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24],
         [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 15, 17, 18, 19, 20, 22, 23],
@@ -193,4 +191,4 @@ if __name__ == '__main__':
 
     for i in range(8):
         print(f'---------------------Cross-Validation Fold # {i+1}---------------------')
-        train(fold_num=i, train_datasets=[datasets[idx] for idx in train_datasets[i]], validation_datasets=[datasets[idx] for idx in validation_datasets[i]], num_epochs=100)
+        train(fold_num=i, train_datasets=[datasets[idx] for idx in train_datasets[i]], validation_datasets=[datasets[idx] for idx in validation_datasets[i]], num_epochs=40)
