@@ -30,7 +30,7 @@ def save_model(exp_dir, fold, epoch, model, optimizer):
 def train(fold_num, train_datasets, validation_datasets, num_epochs=100):
     device = torch.device("cuda:0" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu")
     model = SciCNN().to(device)
-    optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
+    optimizer = torch.optim.Adam(model.parameters(), lr=1e-5)
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=20, gamma=0.5)
     train_dataloaders = []
     val_dataloaders = []
@@ -113,13 +113,18 @@ def train(fold_num, train_datasets, validation_datasets, num_epochs=100):
         np.save(f'../results/event_specificity_list_fold_{fold_num+1}_epoch_{epoch}.npy', event_specificity_list)
 
     y1 = np.array([])
+    y2 = np.array([])
     
-    for i in train_loss_list:
+    for i in npc_loss_list:
         y1 = np.append(y1, i)
+
+    for i in iCNN_loss_list:
+        y2 = np.append(y2, i)
     
     x = np.arange(0, num_epochs)
     
-    plt.plot(x, y1, 'r-.', label = 'train')
+    plt.plot(x, y1, 'r-.', label = 'NPC')
+    plt.plot(x, y2, 'b-.', label = 'iCNN')
     plt.legend()
     
     plt.title('Loss by Epoch')
@@ -156,8 +161,8 @@ if __name__ == '__main__':
         # CustomEEGDataset(path + '/chb18.pt'),
         # CustomEEGDataset(path + '/chb19.pt'),
         # CustomEEGDataset(path + '/chb20.pt'),
-        # CustomEEGDataset(path + '/chb21.pt'),
-        # CustomEEGDataset(path + '/chb22.pt'),
+        CustomEEGDataset(path + '/chb21.pt'),
+        CustomEEGDataset(path + '/chb22.pt'),
         CustomEEGDataset(path + '/chb23.pt'),
         CustomEEGDataset(path + '/chb24.pt'),
     ]
@@ -175,7 +180,7 @@ if __name__ == '__main__':
     ]
 
     train_datasets = [
-        [1],
+        [1, 2, 3],
         [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 14, 15, 16, 17, 19, 21, 22, 23, 24],
         [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24],
         [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 15, 17, 18, 19, 20, 22, 23],
@@ -186,6 +191,6 @@ if __name__ == '__main__':
         [0, 1, 2, 3, 4, 5, 7, 8, 9, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 24]
     ]    
 
-    for i in range(1):
+    for i in range(8):
         print(f'---------------------Cross-Validation Fold # {i+1}---------------------')
         train(fold_num=i, train_datasets=[datasets[idx] for idx in train_datasets[i]], validation_datasets=[datasets[idx] for idx in validation_datasets[i]], num_epochs=100)
