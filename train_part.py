@@ -13,8 +13,8 @@ import logging
 def train_epoch(model, dataloaders, optimizer, loss_type, device):
     model.train()
     start_epoch = time.perf_counter()
-    npc_loss = 0.
-    iCNN_loss = 0.
+    npc_losses = 0.
+    iCNN_losses = 0.
     iterators = list(map(iter, dataloaders))
     total_length = sum(len(itr) for itr in iterators)
     report_interval = total_length // 10
@@ -28,14 +28,17 @@ def train_epoch(model, dataloaders, optimizer, loss_type, device):
             optimizer.zero_grad()
             '''Key Part: npc loss only updates npc positions, and iCNN loss only updates iCNN parameters'''
             npc_loss, iCNN_loss = loss_type(model(images), model)
-            npc_loss += npc_loss.item()
-            iCNN_loss += iCNN_loss.item()
+            npc_losses += npc_loss.item()
+            iCNN_losses += iCNN_loss.item()
             for param in model.parameters():
                 param.requires_grad = False
             model.npc.position.requires_grad = True
             npc_loss.backward(retain_graph=True)
-            for param in model.parameters():
-                param.requires_grad = True
+            for name, param in model.named_parameters():
+                if name != 'npc.label':
+                    param.requires_grad = True
+                else:
+                    print(param.requires_grad, param)
             model.npc.position.requires_grad = False
             iCNN_loss.backward()
             optimizer.step()
@@ -44,7 +47,7 @@ def train_epoch(model, dataloaders, optimizer, loss_type, device):
                 logging.info(f'Processed {itr}/{total_length} samples')
         except StopIteration:
             iterators.remove(iterator)
-    return npc_loss/total_length, iCNN_loss/total_length, time.perf_counter() - start_epoch
+    return npc_losses/total_length, iCNN_losses/total_length, time.perf_counter() - start_epoch
 
 '''Calibration: 2 minutes of seizure-free data / labeling NPC clusters'''
 def calibrate(model, dataloader, device): 
@@ -56,8 +59,9 @@ def calibrate(model, dataloader, device):
         images = images.to(device)
         output = model(images)
         label_count = torch.zeros_like(model.npc.label)
-
+        print('output:', output.shape)
         for img in output:
+            print('img:', img.shape)
             distances = torch.norm(img.view(1, -1, 1) - model.npc.position.data, dim=1).squeeze()
             closest_position_index = torch.argmin(distances)
             label_count[closest_position_index] += 1
