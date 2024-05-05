@@ -83,7 +83,7 @@ class BasicConv1d(nn.Module):
         return self.conv(x)
     
 class NPC(nn.Module):
-    def __init__(self, num_clusters=64):
+    def __init__(self, num_clusters=256):
         super(NPC, self).__init__()
         # 256 predefined positions of NPC clusters
         self.position = nn.Parameter(torch.from_numpy(np.random.uniform(0, 1, (num_clusters, 16, 1))).to(torch.float32), requires_grad=True)
