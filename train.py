@@ -49,10 +49,10 @@ def train(fold_num, train_datasets, validation_datasets, num_epochs=100):
         val_dataloaders.append(val_dataloader)
 
     # start from epoch 9(10): to 20th epoch
-    model.load_state_dict(torch.load(f'../model_fine/model_9_{fold_num}.pt')['model'])
-    optimizer.load_state_dict(torch.load(f'../model_fine/model_9_{fold_num}.pt')['optimizer'])
+    model.load_state_dict(torch.load(f'../model_fine/model_19_{fold_num}.pt')['model'])
+    optimizer.load_state_dict(torch.load(f'../model_fine/model_19_{fold_num}.pt')['optimizer'])
 
-    for epoch in range(10, num_epochs):
+    for epoch in range(20, num_epochs):
         print(f'Epoch #{epoch+1}')
         logging.info(f'Epoch #{epoch+1}')
 
@@ -115,7 +115,7 @@ def train(fold_num, train_datasets, validation_datasets, num_epochs=100):
         logging.info(f'total sample-based sensitivity: {sensitivity_list.mean()}, sample-based specificity: {specificity_list.mean()}')
 
         print(f'total event-based sensitivity: {event_sensitivity_list.mean()}, event-based specificity: {event_specificity_list.mean()}')
-        logging.info(f'total event-based sensitivity: {event_sensitivity_list.mean()}, event-based specificity: {event_specificity_list.mean()}')
+        logging.info(f'total event-based sensitivity (epoch 20+): {event_sensitivity_list.mean()}, event-based specificity: {event_specificity_list.mean()}')
             
     # y1 = np.array([])
 
@@ -196,4 +196,4 @@ if __name__ == '__main__':
     for i in range(8):
         print(f'---------------------Cross-Validation Fold # {i+1}---------------------')
         logging.info(f'---------------------Cross-Validation Fold # {i+1}---------------------')
-        train(fold_num=i, train_datasets=[datasets[idx] for idx in train_datasets[i]], validation_datasets=[datasets[idx] for idx in validation_datasets[i]], num_epochs=20)
+        train(fold_num=i, train_datasets=[datasets[idx] for idx in train_datasets[i]], validation_datasets=[datasets[idx] for idx in validation_datasets[i]], num_epochs=30)
